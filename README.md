@@ -1,4 +1,4 @@
-[navidad_mundial.html](https://github.com/user-attachments/files/28990655/navidad_mundial.html)
+[navidad_mundial(2).html](https://github.com/user-attachments/files/28993600/navidad_mundial.2.html)
 
 <!DOCTYPE html>
 <html lang="es">
@@ -8,455 +8,452 @@
 <title>Filtrando Ilusiones – Navidad del Mundo</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#000;overflow:hidden;font-family:'Georgia',serif;touch-action:none;}
-#canvas{display:block;width:100vw;height:100vh;}
+html,body{width:100%;height:100%;overflow:hidden;background:#050A18;font-family:Georgia,serif;}
 
-/* HUD title */
-#hud{position:fixed;top:0;left:0;right:0;z-index:10;pointer-events:none;
-  padding:14px 16px 10px;
-  background:linear-gradient(to bottom,rgba(0,0,0,0.75) 0%,transparent 100%);}
-#hud h1{color:#F5E6C8;font-size:15px;font-style:italic;letter-spacing:0.5px;
-  text-shadow:0 1px 6px rgba(0,0,0,0.9);text-align:center;}
-#hud p{color:#C8A050;font-size:11px;text-align:center;margin-top:3px;letter-spacing:1px;}
+/* Estrellas */
+#stars{position:fixed;inset:0;z-index:0;}
 
-/* Story overlay */
-#story{
-  position:fixed;inset:0;z-index:50;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(0,0,0,0);
-  pointer-events:none;
-  transition:background 0.5s ease;
+/* Globo contenedor */
+#globe-wrap{
+  position:fixed;inset:0;z-index:1;
+  display:flex;align-items:center;justify-content:center;
 }
-#story.active{background:rgba(0,0,0,0.82);pointer-events:all;}
-
-#story-card{
-  width:92%;max-width:380px;max-height:80vh;overflow-y:auto;
-  background:linear-gradient(145deg,#3D1500,#1A0800);
-  border:1.5px solid #C8A050;border-radius:16px;
-  padding:24px 20px 20px;
-  transform:scale(0.6) translateY(60px);opacity:0;
-  transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
-  box-shadow:0 0 60px rgba(200,160,80,0.3),inset 0 0 40px rgba(0,0,0,0.4);
+#globe{
+  position:relative;
+  width:min(80vw,80vh);
+  height:min(80vw,80vh);
+  border-radius:50%;
+  cursor:grab;
+  user-select:none;
+  touch-action:none;
 }
-#story.active #story-card{transform:scale(1) translateY(0);opacity:1;}
+#globe:active{cursor:grabbing;}
 
-#story-flag{font-size:44px;text-align:center;display:block;margin-bottom:4px;
-  filter:drop-shadow(0 2px 8px rgba(200,160,80,0.6));}
-#story-country{color:#F5E6C8;font-size:22px;font-style:italic;
-  text-align:center;letter-spacing:1px;margin-bottom:4px;
-  text-shadow:0 0 20px rgba(200,160,80,0.5);}
-#story-subtitle{color:#C8A050;font-size:13px;text-align:center;
-  margin-bottom:16px;letter-spacing:0.5px;font-style:italic;}
-#story-divider{border:none;border-top:1px solid rgba(200,160,80,0.4);margin:0 0 16px;}
-#story-text{color:#E8D5A8;font-size:14px;line-height:1.8;text-align:justify;}
-#story-text em{color:#F5C842;font-style:normal;}
-
-#close-btn{
-  display:block;margin:20px auto 0;
-  background:transparent;border:1px solid #C8A050;
-  color:#C8A050;font-size:13px;font-family:'Georgia',serif;
-  padding:8px 28px;border-radius:30px;cursor:pointer;letter-spacing:1px;
-  transition:all 0.2s;
+/* Capas del globo */
+.globe-layer{
+  position:absolute;inset:0;border-radius:50%;
 }
-#close-btn:active{background:rgba(200,160,80,0.15);}
-
-/* Pulse ring on tap */
-.pulse-ring{
-  position:fixed;pointer-events:none;z-index:40;
-  width:60px;height:60px;border-radius:50%;
-  border:2px solid rgba(200,160,80,0.8);
-  transform:translate(-50%,-50%) scale(0);
-  animation:pulse-anim 0.6s ease-out forwards;
+#ocean{
+  background:radial-gradient(circle at 35% 35%, #1E6FA8, #0D3A5C 60%, #061A30);
+  box-shadow:
+    inset -18px -18px 40px rgba(0,0,0,0.7),
+    inset 8px 8px 20px rgba(100,180,255,0.15),
+    0 0 60px rgba(30,80,180,0.4),
+    0 0 120px rgba(10,40,100,0.2);
 }
-@keyframes pulse-anim{
-  0%{transform:translate(-50%,-50%) scale(0);opacity:1;}
-  100%{transform:translate(-50%,-50%) scale(2.5);opacity:0;}
+#continents{position:absolute;inset:0;border-radius:50%;overflow:hidden;}
+#shine{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, transparent 55%);
+  pointer-events:none;z-index:10;
+}
+#atmosphere{
+  position:absolute;inset:-3%;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, transparent 60%, rgba(30,100,200,0.25) 80%, rgba(10,50,150,0.4) 100%);
+  pointer-events:none;z-index:11;
 }
 
-/* Country dots */
-.country-dot{
-  position:fixed;pointer-events:none;z-index:8;
-  width:10px;height:10px;border-radius:50%;
-  background:#F5C842;
-  box-shadow:0 0 8px 2px rgba(245,200,66,0.7);
+/* Puntos de países */
+.country-pin{
+  position:absolute;
+  width:14px;height:14px;
+  border-radius:50%;
   transform:translate(-50%,-50%);
-  transition:transform 0.2s,box-shadow 0.2s;
+  cursor:pointer;
+  z-index:20;
+  transition:transform 0.2s;
+  box-shadow:0 0 0 2px rgba(255,255,255,0.3);
+}
+.country-pin::after{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  animation:ping 1.8s ease-out infinite;
+}
+@keyframes ping{
+  0%{box-shadow:0 0 0 0 currentColor;opacity:0.8;}
+  100%{box-shadow:0 0 0 12px transparent;opacity:0;}
+}
+.country-pin:active{transform:translate(-50%,-50%) scale(1.4);}
+
+/* Etiqueta de país */
+.pin-label{
+  position:absolute;
+  white-space:nowrap;
+  font-size:11px;color:#F5E6C8;
+  text-shadow:0 1px 4px rgba(0,0,0,0.9);
+  pointer-events:none;
+  transform:translate(-50%, -130%);
+  background:rgba(0,0,0,0.55);
+  padding:2px 6px;border-radius:8px;
+  border:0.5px solid rgba(200,160,80,0.4);
 }
 
-/* Gyro hint */
-#hint{position:fixed;bottom:18px;left:0;right:0;text-align:center;
-  color:rgba(200,160,80,0.6);font-size:11px;letter-spacing:1px;
-  pointer-events:none;z-index:10;animation:fade-hint 3s ease 2s forwards;}
-@keyframes fade-hint{0%{opacity:1;}100%{opacity:0;}}
+/* HUD */
+#hud{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  padding:12px 16px 8px;
+  background:linear-gradient(to bottom,rgba(5,10,24,0.9),transparent);
+  pointer-events:none;
+}
+#hud h1{
+  color:#F5E6C8;font-size:13px;font-style:italic;
+  text-align:center;letter-spacing:0.3px;
+  text-shadow:0 1px 6px rgba(0,0,0,1);
+}
+#hud p{color:#C8A050;font-size:10px;text-align:center;margin-top:2px;letter-spacing:0.8px;}
 
-/* Stars bg */
-#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#hint-bottom{
+  position:fixed;bottom:16px;left:0;right:0;z-index:30;
+  text-align:center;color:rgba(200,160,80,0.7);font-size:10px;
+  letter-spacing:0.8px;pointer-events:none;
+  animation:fadeout 4s ease 2.5s forwards;
+}
+@keyframes fadeout{to{opacity:0;}}
+
+/* Panel cuento */
+#overlay{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(2,6,18,0);
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+  transition:background 0.4s;
+}
+#overlay.open{background:rgba(2,6,18,0.88);pointer-events:all;}
+
+#panel{
+  width:92%;max-width:370px;max-height:82vh;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:linear-gradient(150deg,#2A0E00,#110500);
+  border:1.5px solid #C8A050;border-radius:18px;
+  padding:22px 18px 18px;
+  transform:translateY(40px) scale(0.92);opacity:0;
+  transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1),opacity 0.35s;
+}
+#overlay.open #panel{transform:translateY(0) scale(1);opacity:1;}
+
+#p-flag{font-size:46px;text-align:center;display:block;margin-bottom:2px;}
+#p-name{color:#F5E6C8;font-size:21px;font-style:italic;text-align:center;
+  letter-spacing:0.8px;text-shadow:0 0 16px rgba(200,160,80,0.5);}
+#p-sub{color:#C8A050;font-size:12px;text-align:center;margin:4px 0 14px;font-style:italic;}
+#p-line{border:none;border-top:1px solid rgba(200,160,80,0.35);margin:0 0 14px;}
+#p-text{color:#E8D5A8;font-size:13.5px;line-height:1.85;text-align:justify;}
+#p-text em{color:#F5C842;font-style:normal;font-weight:bold;}
+#p-close{
+  display:block;margin:18px auto 0;
+  background:transparent;border:1px solid #C8A050;
+  color:#C8A050;font-size:12px;font-family:Georgia,serif;
+  padding:7px 26px;border-radius:30px;cursor:pointer;
+  letter-spacing:0.8px;
+}
+#p-close:active{background:rgba(200,160,80,0.12);}
 </style>
 </head>
 <body>
+
 <canvas id="stars"></canvas>
-<canvas id="canvas"></canvas>
 
 <div id="hud">
-  <h1>Filtrando Ilusiones: Un Viaje por la Navidad del Mundo</h1>
-  <p>✦ PULSA CADA PAÍS PARA DESCUBRIR SU CUENTO ✦</p>
+  <h1>✦ Filtrando Ilusiones: Un Viaje por la Navidad del Mundo ✦</h1>
+  <p>PULSA CADA PAÍS PARA DESCUBRIR SU CUENTO</p>
 </div>
 
-<div id="story">
-  <div id="story-card">
-    <span id="story-flag">🌍</span>
-    <div id="story-country">País</div>
-    <div id="story-subtitle">El cuento</div>
-    <hr id="story-divider">
-    <p id="story-text"></p>
-    <button id="close-btn" onclick="closeStory()">✦ Cerrar ✦</button>
+<div id="globe-wrap">
+  <div id="globe">
+    <div class="globe-layer" id="ocean"></div>
+    <canvas class="globe-layer" id="continents"></canvas>
+    <div class="globe-layer" id="shine"></div>
+    <div id="atmosphere"></div>
   </div>
 </div>
 
-<div id="hint">Rota el globo con el dedo · Pulsa un país</div>
+<div id="hint-bottom">Arrastra el globo con el dedo · Pulsa un país</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<div id="overlay">
+  <div id="panel">
+    <span id="p-flag"></span>
+    <div id="p-name"></div>
+    <div id="p-sub"></div>
+    <hr id="p-line">
+    <p id="p-text"></p>
+    <button id="p-close" onclick="closePanel()">✦ Cerrar ✦</button>
+  </div>
+</div>
+
 <script>
-// ─── DATA ────────────────────────────────────────────────────────────────────
-const COUNTRIES = [
-  {
-    name:"Finlandia", flag:"🇫🇮",
-    subtitle:"La carta que llegó al bosque nevado",
-    lat:64, lon:26, color:0x4AAEDC,
-    text:`En un pequeño pueblo entre abetos cubiertos de nieve, <em>Liisa</em> escribió su carta a Joulupukki —el Papá Noel finlandés— y la dejó junto a la chimenea.\n\nEsa noche, las auroras boreales iluminaron el cielo y ella vio a lo lejos, entre los pinos, una luz que se movía. Al despertar, su regalo estaba allí: un trineo en miniatura tallado a mano.\n\nLiisa supo que <em>Joulupukki vive de verdad en Laponia</em>, y que los renos conocen cada nombre.`
-  },
-  {
-    name:"Alemania", flag:"🇩🇪",
-    subtitle:"El secreto del mercado de Núremberg",
-    lat:51, lon:10, color:0x4A8A3A,
-    text:`Cada diciembre, <em>Klara</em> esperaba el momento de visitar el mercado navideño con su abuela. Entre el aroma de las galletas de jengibre y las luces de las casitas medievales, su abuela le confió un secreto.\n\n«Si cierras los ojos junto al árbol central y pides un deseo, el espíritu del Adviento lo escucha.»\n\nKlara lo hizo. Pidió que su familia estuviera siempre unida. Y ese año, su tío que vivía lejos <em>apareció de sorpresa en la puerta de casa</em>.`
-  },
-  {
-    name:"España", flag:"🇪🇸",
-    subtitle:"La noche de los Reyes",
-    lat:40, lon:-4, color:0xDDAA00,
-    text:`<em>Carmen</em> no podía dormir. Era la noche del 5 de enero y había dejado sus zapatos en el balcón, llenos de paja para los camellos.\n\nSu abuelo le contó que Melchor, Gaspar y Baltasar viajaban desde muy lejos siguiendo la misma estrella de siempre, y que si los niños se quedaban despiertos, <em>los Reyes pasaban de largo</em>.\n\nCarmen cerró los ojos con fuerza. A la mañana siguiente, los zapatos estaban llenos de caramelos y un pequeño libro con su nombre escrito en la portada. Los Reyes siempre saben.`
-  },
-  {
-    name:"México", flag:"🇲🇽",
-    subtitle:"La última posada",
-    lat:23, lon:-102, color:0xCC3388,
-    text:`Durante nueve noches, <em>Diego</em> y su familia habían ido de casa en casa cantando y pidiendo posada, como hicieron María y José.\n\nLa última noche, Diego cargaba la estrella de la piñata. Cuando por fin la puerta se abrió y los recibieron con ponche caliente y buñuelos, Diego sintió que ese momento era la Navidad de verdad.\n\nNo los regalos, sino el camino, el frío, la espera, y <em>la alegría de que al final siempre hay alguien que abre la puerta</em>.`
-  },
-  {
-    name:"Brasil", flag:"🇧🇷",
-    subtitle:"Papai Noel en la favela",
-    lat:-15, lon:-47, color:0x2A9A44,
-    text:`En Río de Janeiro, <em>Isabela</em> vivía en una favela donde las casas trepaban por el cerro como estrellas de colores. En Navidad, todo el barrio se llenaba de guirnaldas y música.\n\nUn niño nuevo, llegado del interior, preguntó si Papai Noel también llegaba allí. Isabela sonrió y señaló las luces en cada ventana: «Aquí no necesita trineo. <em>Sube a pie, como todos</em>.»\n\nEsa noche bailaron juntos hasta tarde. El regalo más grande fue el amigo nuevo.`
-  },
-  {
-    name:"Etiopía", flag:"🇪🇹",
-    subtitle:"La luz de Genna",
-    lat:9, lon:38, color:0xCC7722,
-    text:`En Lalibela, <em>Dawit</em> se despertó antes del amanecer para participar en la procesión del Genna —la Navidad etíope, que se celebra el <em>7 de enero</em>—.\n\nVestido de blanco, sostenía una vela encendida junto a cientos de personas. Las iglesias de piedra brillaban en la oscuridad y el canto llenaba el aire frío de la montaña.\n\nSu abuela le dijo: «La luz que llevas en la mano es la misma que iluminó el mundo hace dos mil años.» <em>Dawit no olvidó esa noche en toda su vida.</em>`
-  },
-  {
-    name:"Japón", flag:"🇯🇵",
-    subtitle:"El cubo rojo de Tokio",
-    lat:36, lon:138, color:0xDD3333,
-    text:`<em>Hana</em> no entendía por qué cada Navidad su familia pedía pollo frito en KFC, hasta que su abuelo le contó la historia.\n\nHace muchos años, un hombre vio en una vitrina de Tokio al Coronel Sanders vestido de Papá Noel y pensó: «Este hombre trae alegría.» Desde entonces, el pollo navideño se convirtió en tradición.\n\nEsa noche, bajo las luces de neón de Shibuya, Hana entendió que <em>la magia no siempre llega del cielo</em>: a veces llega en una caja roja y huele a especias.`
-  },
-  {
-    name:"Australia", flag:"🇦🇺",
-    subtitle:"Papá Noel en la playa",
-    lat:-25, lon:134, color:0xDDAA00,
-    text:`En Sydney, <em>Tom</em> estaba convencido de que Papá Noel no podría llegar: hacía 35 grados y no había chimenea.\n\nPero su madre le explicó que en Australia, Santa cambia el trineo por una tabla de surf. El 25 de diciembre, mientras la familia hacía barbacoa en la playa, apareció en el agua un hombre con traje rojo y gorro playero, riendo a carcajadas.\n\nTom corrió descalzo por la arena y recibió su regalo: una caña de pescar. <em>El verano más feliz que recordaría.</em>`
-  },
+// ── DATOS ────────────────────────────────────────────────────────────────────
+const DATA = [
+  {name:"Finlandia", flag:"🇫🇮", color:"#4AAEDC",
+   sub:"La carta que llegó al bosque nevado",
+   lat:64, lon:26,
+   text:`En un pequeño pueblo entre abetos cubiertos de nieve, <em>Liisa</em> escribió su carta a Joulupukki —el Papá Noel finlandés— y la dejó junto a la chimenea.\n\nEsa noche, las auroras boreales iluminaron el cielo y ella vio a lo lejos, entre los pinos, una luz que se movía. Al despertar, su regalo estaba allí: un trineo en miniatura tallado a mano.\n\nLiisa supo que <em>Joulupukki vive de verdad en Laponia</em>, y que los renos conocen cada nombre.`},
+  {name:"Alemania", flag:"🇩🇪", color:"#6AB84A",
+   sub:"El secreto del mercado de Núremberg",
+   lat:51, lon:10,
+   text:`Cada diciembre, <em>Klara</em> esperaba el momento de visitar el mercado navideño con su abuela. Entre el aroma de las galletas de jengibre y las luces de las casitas medievales, su abuela le confió un secreto.\n\n«Si cierras los ojos junto al árbol central, el espíritu del Adviento escucha tu deseo.»\n\nKlara lo hizo. Pidió que su familia estuviera siempre unida. Y ese año, <em>su tío que vivía lejos apareció de sorpresa en la puerta de casa</em>.`},
+  {name:"España", flag:"🇪🇸", color:"#F5C842",
+   sub:"La noche de los Reyes",
+   lat:40, lon:-4,
+   text:`<em>Carmen</em> no podía dormir. Era la noche del 5 de enero y había dejado sus zapatos en el balcón, llenos de paja para los camellos.\n\nSu abuelo le contó que Melchor, Gaspar y Baltasar viajaban desde muy lejos siguiendo la misma estrella de siempre, y que <em>si los niños se quedaban despiertos, los Reyes pasaban de largo</em>.\n\nA la mañana siguiente, los zapatos estaban llenos de caramelos y un pequeño libro con su nombre escrito en la portada. Los Reyes siempre saben.`},
+  {name:"México", flag:"🇲🇽", color:"#E050A0",
+   sub:"La última posada",
+   lat:23, lon:-102,
+   text:`Durante nueve noches, <em>Diego</em> y su familia habían ido de casa en casa cantando y pidiendo posada, como hicieron María y José.\n\nLa última noche, Diego cargaba la estrella de la piñata. Cuando por fin la puerta se abrió y los recibieron con ponche caliente y buñuelos, Diego sintió que ese momento era la Navidad de verdad.\n\nNo los regalos, sino el camino, el frío, la espera, y <em>la alegría de que al final siempre hay alguien que abre la puerta</em>.`},
+  {name:"Brasil", flag:"🇧🇷", color:"#4ACA70",
+   sub:"Papai Noel en la favela",
+   lat:-15, lon:-47,
+   text:`En Río de Janeiro, <em>Isabela</em> vivía en una favela donde las casas trepaban por el cerro como estrellas de colores. En Navidad, todo el barrio se llenaba de guirnaldas y música.\n\nUn niño nuevo preguntó si Papai Noel también llegaba allí. Isabela sonrió y señaló las luces en cada ventana:\n\n«¿Ves eso? Aquí no necesita trineo. <em>Sube a pie, como todos.</em>» Esa noche bailaron juntos hasta tarde. El regalo más grande fue el amigo nuevo.`},
+  {name:"Etiopía", flag:"🇪🇹", color:"#E08830",
+   sub:"La luz de Genna",
+   lat:9, lon:38,
+   text:`En Lalibela, <em>Dawit</em> se despertó antes del amanecer para la procesión del Genna —la Navidad etíope, <em>el 7 de enero</em>—.\n\nVestido de blanco, sostenía una vela junto a cientos de personas. Las iglesias de piedra brillaban en la oscuridad y el canto llenaba el aire frío de la montaña.\n\nSu abuela le dijo: «La luz que llevas en la mano es la misma que iluminó el mundo hace dos mil años.» <em>Dawit no olvidó esa noche en toda su vida.</em>`},
+  {name:"Japón", flag:"🇯🇵", color:"#E84040",
+   sub:"El cubo rojo de Tokio",
+   lat:36, lon:138,
+   text:`<em>Hana</em> no entendía por qué cada Navidad su familia pedía pollo frito en KFC, hasta que su abuelo le contó la historia.\n\nHace muchos años, un hombre vio en Tokio al Coronel Sanders vestido de Papá Noel y pensó: «Este hombre trae alegría.» Desde entonces, <em>el pollo navideño se convirtió en tradición</em>.\n\nEsa noche, bajo las luces de neón de Shibuya, Hana entendió que la magia no siempre llega del cielo: a veces llega en una caja roja y huele a especias.`},
+  {name:"Australia", flag:"🇦🇺", color:"#F0B020",
+   sub:"Papá Noel en la playa",
+   lat:-25, lon:134,
+   text:`En Sydney, <em>Tom</em> estaba convencido de que Papá Noel no podría llegar: hacía 35 grados y no había chimenea.\n\nPero su madre le explicó que en Australia, Santa cambia el trineo por una tabla de surf. El 25 de diciembre, mientras la familia hacía barbacoa en la playa, apareció un hombre con traje rojo y gorro playero, riendo a carcajadas.\n\nTom corrió descalzo por la arena y recibió su regalo: una caña de pescar. <em>El verano más feliz que recordaría.</em>`},
 ];
 
-// ─── STARS BACKGROUND ────────────────────────────────────────────────────────
-(function drawStars(){
+// ── ESTRELLAS ────────────────────────────────────────────────────────────────
+(function(){
   const c=document.getElementById('stars');
-  c.width=window.innerWidth;c.height=window.innerHeight;
+  c.width=window.innerWidth; c.height=window.innerHeight;
   const ctx=c.getContext('2d');
-  ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);
-  for(let i=0;i<300;i++){
-    const x=Math.random()*c.width,y=Math.random()*c.height;
-    const r=Math.random()*1.5;
-    const alpha=0.4+Math.random()*0.6;
-    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,240,${alpha})`;ctx.fill();
+  ctx.fillStyle='#050A18'; ctx.fillRect(0,0,c.width,c.height);
+  for(let i=0;i<350;i++){
+    const x=Math.random()*c.width, y=Math.random()*c.height;
+    const r=Math.random()*1.4+0.2;
+    const a=0.4+Math.random()*0.6;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,252,220,${a})`; ctx.fill();
   }
 })();
 
-// ─── THREE.JS GLOBE ──────────────────────────────────────────────────────────
-const W=window.innerWidth, H=window.innerHeight;
-const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('canvas'),antialias:true,alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.setSize(W,H);
+// ── CONTINENTES EN CANVAS ─────────────────────────────────────────────────────
+const globeEl = document.getElementById('globe');
+const cvs = document.getElementById('continents');
 
-const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(45,W/H,0.1,100);
-camera.position.z=2.8;
+function resizeGlobe(){
+  const sz = Math.min(window.innerWidth*0.82, window.innerHeight*0.82);
+  globeEl.style.width = sz+'px';
+  globeEl.style.height = sz+'px';
+  cvs.width = sz; cvs.height = sz;
+  drawContinents(rotX, rotY);
+  placePins();
+}
 
-// Globe
-const RADIUS=1.0;
-const globeGeo=new THREE.SphereGeometry(RADIUS,64,64);
-
-// Parchment-style earth shader material
-const globeMat=new THREE.MeshPhongMaterial({
-  color:0x8B6914,
-  emissive:0x1A0800,
-  specular:0x332200,
-  shininess:15,
-});
-const globe=new THREE.Mesh(globeGeo,globeMat);
-scene.add(globe);
-
-// Ocean layer (slightly larger, semi-transparent blue)
-const oceanMat=new THREE.MeshPhongMaterial({
-  color:0x1A4A6A,emissive:0x000A14,
-  transparent:true,opacity:0.55,side:THREE.FrontSide,
-});
-const ocean=new THREE.Mesh(new THREE.SphereGeometry(RADIUS*0.999,64,64),oceanMat);
-scene.add(ocean);
-
-// Atmosphere glow
-const atmMat=new THREE.MeshPhongMaterial({
-  color:0x224488,emissive:0x112244,
-  transparent:true,opacity:0.12,side:THREE.BackSide,
-});
-const atm=new THREE.Mesh(new THREE.SphereGeometry(RADIUS*1.08,32,32),atmMat);
-scene.add(atm);
-
-// Continent outline dots (simplified blobs)
-const CONTINENTS=[
-  // North America
-  {lat:50,lon:-100,r:0.28},{lat:35,lon:-100,r:0.22},{lat:20,lon:-100,r:0.12},
-  // South America
-  {lat:-10,lon:-55,r:0.20},{lat:-30,lon:-58,r:0.14},
-  // Europe
-  {lat:50,lon:10,r:0.14},{lat:55,lon:20,r:0.10},
-  // Africa
-  {lat:5,lon:20,r:0.22},{lat:-20,lon:25,r:0.16},
-  // Asia
-  {lat:50,lon:80,r:0.30},{lat:30,lon:100,r:0.22},{lat:60,lon:120,r:0.18},
+// Continentes como polígonos lat/lon
+const CONTINENTS = [
+  // América del Norte
+  [[70,-140],[70,-60],[60,-55],[50,-55],[45,-60],[30,-80],[20,-87],[15,-85],[10,-83],[8,-77],[8,-75],[20,-105],[30,-110],[32,-117],[38,-122],[48,-124],[58,-137],[70,-140]],
+  // Groenlandia
+  [[76,-73],[83,-35],[76,-18],[72,-22],[68,-28],[68,-52],[72,-60],[76,-73]],
+  // América del Sur
+  [[10,-75],[10,-62],[5,-52],[0,-50],[-5,-35],[-10,-37],[-23,-43],[-33,-52],[-40,-62],[-55,-68],[-55,-64],[-40,-65],[-30,-50],[-20,-40],[-5,-35],[0,-48],[5,-60],[10,-75]],
+  // Europa
+  [[71,28],[70,20],[58,5],[51,2],[43,-9],[36,-6],[36,10],[40,18],[45,14],[44,28],[52,23],[55,22],[60,28],[65,25],[68,18],[71,28]],
+  // Escandinavia
+  [[71,28],[70,30],[68,28],[65,14],[57,8],[57,11],[60,11],[63,14],[68,18],[71,28]],
+  // África
+  [[37,10],[37,25],[30,33],[22,37],[12,42],[0,42],[-10,40],[-20,35],[-34,26],[-34,18],[-22,14],[-18,12],[-5,10],[0,8],[5,2],[4,-8],[5,-15],[15,-17],[22,-17],[30,-10],[37,10]],
+  // Asia principal
+  [[70,30],[72,60],[72,130],[60,140],[50,142],[40,130],[22,114],[10,104],[5,100],[5,95],[20,90],[22,88],[25,85],[28,77],[20,73],[22,60],[30,57],[25,55],[25,50],[30,48],[35,36],[42,28],[52,30],[60,30],[70,30]],
+  // Península Arábiga
+  [[30,48],[22,60],[12,45],[12,43],[15,42],[22,40],[28,34],[30,35],[30,48]],
+  // Subcontinente indio
+  [[28,77],[25,85],[22,88],[20,90],[8,77],[8,80],[12,80],[20,87],[22,88]],
+  // Japón (simplificado)
+  [[45,141],[43,141],[34,130],[31,130],[33,131],[35,136],[38,141],[40,141],[42,140],[45,141]],
+  // Sureste asiático
+  [[22,100],[20,100],[15,100],[10,99],[5,100],[5,103],[1,104],[5,100],[10,99],[15,102],[20,100],[22,100]],
   // Australia
-  {lat:-25,lon:134,r:0.16},
-  // Greenland
-  {lat:72,lon:-40,r:0.10},
-  // SE Asia
-  {lat:15,lon:105,r:0.10},
+  [[-15,130],[-12,136],[-12,142],[-20,148],[-38,146],[-38,140],[-32,134],[-32,126],[-22,114],[-20,116],[-15,130]],
+  // Nueva Zelanda sur
+  [[-46,168],[-40,172],[-34,173],[-46,168]],
 ];
 
-function latLonToVec3(lat,lon,r){
-  const phi=(90-lat)*Math.PI/180;
-  const theta=(lon+180)*Math.PI/180;
-  return new THREE.Vector3(
-    -r*Math.sin(phi)*Math.cos(theta),
-    r*Math.cos(phi),
-    r*Math.sin(phi)*Math.sin(theta)
-  );
+let rotX = 0.3, rotY = -0.3;
+
+function latLonTo2D(lat, lon, rX, rY, R){
+  const phi = (90-lat)*Math.PI/180;
+  const theta = (lon+180)*Math.PI/180;
+  // 3D point on sphere
+  let x = R*Math.sin(phi)*Math.cos(theta);
+  let y = R*Math.cos(phi);
+  let z = R*Math.sin(phi)*Math.sin(theta);
+  // Rotate around Y axis (longitude rotation)
+  const cosY=Math.cos(rY), sinY=Math.sin(rY);
+  const x2 = x*cosY + z*sinY;
+  const z2 = -x*sinY + z*cosY;
+  // Rotate around X axis (tilt)
+  const cosX=Math.cos(rX), sinX=Math.sin(rX);
+  const y2 = y*cosX - z2*sinX;
+  const z3 = y*sinX + z2*cosX;
+  return {x:x2, y:y2, z:z3, visible: z3>0};
 }
 
-// Draw continent patches
-CONTINENTS.forEach(c=>{
-  const pos=latLonToVec3(c.lat,c.lon,RADIUS+0.002);
-  const geo=new THREE.SphereGeometry(c.r,16,16);
-  const mat=new THREE.MeshPhongMaterial({color:0xC8A050,emissive:0x3A2800,shininess:5});
-  const mesh=new THREE.Mesh(geo,mat);
-  mesh.position.copy(pos);
-  scene.add(mesh);
-});
+function drawContinents(rX, rY){
+  const sz = cvs.width;
+  const R = sz/2;
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0,0,sz,sz);
 
-// Country markers
-const markerMeshes=[];
-COUNTRIES.forEach((c,i)=>{
-  const pos=latLonToVec3(c.lat,c.lon,RADIUS+0.022);
-  // Pulsing dot
-  const geo=new THREE.SphereGeometry(0.028,16,16);
-  const mat=new THREE.MeshPhongMaterial({color:c.color,emissive:new THREE.Color(c.color).multiplyScalar(0.4),shininess:80});
-  const mesh=new THREE.Mesh(geo,mat);
-  mesh.position.copy(pos);
-  mesh.userData={index:i,country:c};
-  scene.add(mesh);
-  markerMeshes.push(mesh);
+  // Draw each continent
+  CONTINENTS.forEach(poly=>{
+    // Check if at least some points are visible
+    const pts = poly.map(([lat,lon])=>latLonTo2D(lat,lon,rX,rY,R*0.97));
+    const visibleCount = pts.filter(p=>p.z>0).length;
+    if(visibleCount < poly.length*0.3) return;
 
-  // Halo ring
-  const ringGeo=new THREE.RingGeometry(0.035,0.048,24);
-  const ringMat=new THREE.MeshBasicMaterial({color:c.color,transparent:true,opacity:0.55,side:THREE.DoubleSide});
-  const ring=new THREE.Mesh(ringGeo,ringMat);
-  ring.position.copy(pos);
-  ring.lookAt(0,0,0);ring.rotateX(Math.PI/2);
-  ring.userData={isRing:true,index:i};
-  scene.add(ring);
-});
-
-// Lights
-const ambientLight=new THREE.AmbientLight(0x332200,0.6);
-scene.add(ambientLight);
-const sunLight=new THREE.DirectionalLight(0xFFE0A0,1.2);
-sunLight.position.set(3,2,2);
-scene.add(sunLight);
-const rimLight=new THREE.DirectionalLight(0x2244AA,0.4);
-rimLight.position.set(-3,-1,-2);
-scene.add(rimLight);
-
-// Rotation state
-let isDragging=false;
-let prevMouse={x:0,y:0};
-let rotVel={x:0,y:0};
-let autoRot=true;
-let autoRotSpeed=0.003;
-
-// Touch / mouse
-const canvas=document.getElementById('canvas');
-
-function onDown(x,y){isDragging=true;autoRot=false;prevMouse={x,y};rotVel={x:0,y:0};}
-function onMove(x,y){
-  if(!isDragging)return;
-  const dx=x-prevMouse.x, dy=y-prevMouse.y;
-  rotVel.x=dy*0.005; rotVel.y=dx*0.005;
-  globe.rotation.x+=rotVel.x; globe.rotation.y+=rotVel.y;
-  ocean.rotation.copy(globe.rotation);
-  atm.rotation.copy(globe.rotation);
-  markerMeshes.forEach(m=>{m.rotation.copy(globe.rotation);});
-  scene.children.filter(c=>c.userData&&c.userData.isRing).forEach(r=>{r.rotation.copy(globe.rotation);});
-  prevMouse={x,y};
-}
-function onUp(){isDragging=false;setTimeout(()=>{autoRot=true;},2000);}
-
-canvas.addEventListener('mousedown',e=>onDown(e.clientX,e.clientY));
-canvas.addEventListener('mousemove',e=>onMove(e.clientX,e.clientY));
-canvas.addEventListener('mouseup',onUp);
-canvas.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];onDown(t.clientX,t.clientY);},{passive:false});
-canvas.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];onMove(t.clientX,t.clientY);},{passive:false});
-canvas.addEventListener('touchend',e=>{e.preventDefault();onUp();handleTap(e.changedTouches[0].clientX,e.changedTouches[0].clientY);},{passive:false});
-canvas.addEventListener('click',e=>handleTap(e.clientX,e.clientY));
-
-// Raycasting for country selection
-const raycaster=new THREE.Raycaster();
-const mouse=new THREE.Vector2();
-let tapStart={x:0,y:0};
-
-canvas.addEventListener('mousedown',e=>{tapStart={x:e.clientX,y:e.clientY};});
-canvas.addEventListener('touchstart',e=>{const t=e.touches[0];tapStart={x:t.clientX,y:t.clientY};},{passive:true});
-
-function handleTap(cx,cy){
-  // Only fire if not a drag
-  if(Math.abs(cx-tapStart.x)>10||Math.abs(cy-tapStart.y)>10)return;
-
-  mouse.x=(cx/window.innerWidth)*2-1;
-  mouse.y=-(cy/window.innerHeight)*2+1;
-  raycaster.setFromCamera(mouse,camera);
-
-  const hits=raycaster.intersectObjects(markerMeshes);
-  if(hits.length>0){
-    const idx=hits[0].object.userData.index;
-    spawnPulse(cx,cy);
-    openStory(idx);
-  }
-}
-
-function spawnPulse(x,y){
-  const div=document.createElement('div');
-  div.className='pulse-ring';
-  div.style.left=x+'px'; div.style.top=y+'px';
-  document.body.appendChild(div);
-  setTimeout(()=>div.remove(),700);
-}
-
-// Story panel
-function openStory(i){
-  const c=COUNTRIES[i];
-  document.getElementById('story-flag').textContent=c.flag;
-  document.getElementById('story-country').textContent=c.name;
-  document.getElementById('story-subtitle').textContent=c.subtitle;
-  // Render text with em tags
-  document.getElementById('story-text').innerHTML=c.text.replace(/\n\n/g,'<br><br>');
-  document.getElementById('story').classList.add('active');
-  autoRot=false;
-}
-
-function closeStory(){
-  document.getElementById('story').classList.remove('active');
-  setTimeout(()=>{autoRot=true;},800);
-}
-
-// Gyroscope (DeviceOrientation) for AR-like feel
-let gyroEnabled=false;
-let gyroAlpha=0,gyroBeta=0,gyroGamma=0;
-let gyroOffset={alpha:null,beta:null};
-
-function requestGyro(){
-  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
-    DeviceOrientationEvent.requestPermission().then(r=>{if(r==='granted')enableGyro();});
-  } else {
-    enableGyro();
-  }
-}
-
-function enableGyro(){
-  window.addEventListener('deviceorientation',e=>{
-    if(gyroOffset.alpha===null){gyroOffset.alpha=e.alpha;gyroOffset.beta=e.beta;}
-    gyroBeta=(e.beta-gyroOffset.beta)*Math.PI/180;
-    gyroAlpha=(e.alpha-gyroOffset.alpha)*Math.PI/180;
-    gyroEnabled=true;
-  });
-}
-requestGyro();
-
-// Marker pulse animation
-let t=0;
-function animateMarkers(){
-  t+=0.04;
-  markerMeshes.forEach((m,i)=>{
-    const s=1+0.18*Math.sin(t+i*0.8);
-    m.scale.setScalar(s);
+    ctx.beginPath();
+    let started=false;
+    pts.forEach(p=>{
+      if(p.z <= -R*0.1) return;
+      const px = R + p.x;
+      const py = R - p.y;
+      if(!started){ctx.moveTo(px,py);started=true;}
+      else ctx.lineTo(px,py);
+    });
+    ctx.closePath();
+    // Continent color with depth shading
+    ctx.fillStyle='#C8A050';
+    ctx.strokeStyle='#8B6914';
+    ctx.lineWidth=0.8;
+    ctx.fill();
+    ctx.stroke();
   });
 }
 
-// Sync all globe children rotation
-function syncRotation(){
-  const r=globe.rotation;
-  ocean.rotation.set(r.x,r.y,r.z);
-  atm.rotation.set(r.x,r.y,r.z);
-  scene.children.forEach(c=>{
-    if(c.userData&&(c.userData.index!==undefined)){
-      // Recompute position based on rotated globe
-    }
+// ── PINS ──────────────────────────────────────────────────────────────────────
+let pins=[];
+
+function placePins(){
+  // Remove old pins
+  pins.forEach(p=>{p.el&&p.el.remove();});
+  pins=[];
+  const sz = globeEl.offsetWidth;
+  const R = sz/2;
+
+  DATA.forEach((d,i)=>{
+    const p = latLonTo2D(d.lat, d.lon, rotX, rotY, R*0.97);
+    if(p.z < 0) return; // behind globe
+
+    const pin = document.createElement('div');
+    pin.className='country-pin';
+    pin.style.cssText=`
+      left:${R+p.x}px; top:${R-p.y}px;
+      background:${d.color};
+      color:${d.color};
+    `;
+    // Scale by depth
+    const scale = 0.7 + 0.5*(p.z/R);
+    pin.style.transform=`translate(-50%,-50%) scale(${scale.toFixed(2)})`;
+
+    // Label
+    const lbl=document.createElement('div');
+    lbl.className='pin-label';
+    lbl.textContent=d.flag+' '+d.name;
+    pin.appendChild(lbl);
+
+    pin.addEventListener('click',e=>{e.stopPropagation();openPanel(i);});
+    pin.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();openPanel(i);},{passive:false});
+
+    globeEl.appendChild(pin);
+    pins.push({el:pin, data:d});
   });
 }
 
-// For correct marker position: attach markers to globe
-// Detach and re-add to globe group
-scene.remove(ocean);scene.remove(atm);
-globe.add(ocean);
-scene.children.filter(c=>c.isMesh&&c!==globe).forEach(c=>{
-  scene.remove(c);globe.add(c);
+// ── DRAG ROTATION ─────────────────────────────────────────────────────────────
+let dragging=false, lastX=0, lastY=0, velX=0, velY=0;
+let autoRotate=true;
+let tapX=0,tapY=0;
+
+globeEl.addEventListener('mousedown',e=>{
+  dragging=true;lastX=e.clientX;lastY=e.clientY;
+  velX=0;velY=0;autoRotate=false;
+  tapX=e.clientX;tapY=e.clientY;
 });
-globe.children.forEach(c=>{
-  if(c.userData&&c.userData.isRing){
-    // fix ring orientation
-  }
+window.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY;
+  rotY+=dx*0.008; rotX+=dy*0.008;
+  rotX=Math.max(-1.2,Math.min(1.2,rotX));
+  velX=dy*0.006; velY=dx*0.006;
+  lastX=e.clientX;lastY=e.clientY;
+  drawContinents(rotX,rotY);placePins();
+});
+window.addEventListener('mouseup',e=>{
+  dragging=false;
+  if(Math.abs(e.clientX-tapX)<6&&Math.abs(e.clientY-tapY)<6) return;
+  setTimeout(()=>{autoRotate=true;},1500);
 });
 
-// Render loop
-function animate(){
+globeEl.addEventListener('touchstart',e=>{
+  dragging=true;
+  const t=e.touches[0];
+  lastX=t.clientX;lastY=t.clientY;
+  tapX=t.clientX;tapY=t.clientY;
+  velX=0;velY=0;autoRotate=false;
+},{passive:true});
+window.addEventListener('touchmove',e=>{
+  if(!dragging||e.touches.length!==1)return;
+  const t=e.touches[0];
+  const dx=t.clientX-lastX, dy=t.clientY-lastY;
+  rotY+=dx*0.008; rotX+=dy*0.008;
+  rotX=Math.max(-1.2,Math.min(1.2,rotX));
+  velX=dy*0.005; velY=dx*0.005;
+  lastX=t.clientX;lastY=t.clientY;
+  drawContinents(rotX,rotY);placePins();
+},{passive:true});
+window.addEventListener('touchend',e=>{
+  dragging=false;
+  const t=e.changedTouches[0];
+  if(Math.abs(t.clientX-tapX)<10&&Math.abs(t.clientY-tapY)<10) return;
+  setTimeout(()=>{autoRotate=true;},1500);
+});
+
+// ── ANIMACIÓN ──────────────────────────────────────────────────────────────────
+let lastTime=0;
+function animate(ts){
   requestAnimationFrame(animate);
-  if(autoRot){
-    globe.rotation.y+=autoRotSpeed;
+  const dt=Math.min((ts-lastTime)/16,3); lastTime=ts;
+  if(!dragging){
+    if(autoRotate) rotY+=0.004*dt;
+    // inercia
+    if(!autoRotate&&(Math.abs(velX)>0.0005||Math.abs(velY)>0.0005)){
+      rotX+=velX*dt; rotY+=velY*dt;
+      velX*=0.92; velY*=0.92;
+      rotX=Math.max(-1.2,Math.min(1.2,rotX));
+      drawContinents(rotX,rotY);placePins();
+    } else if(autoRotate){
+      drawContinents(rotX,rotY);placePins();
+    }
   }
-  if(gyroEnabled&&autoRot){
-    globe.rotation.x+=(gyroBeta*0.3-globe.rotation.x)*0.05;
-    globe.rotation.z+=(-gyroAlpha*0.3-globe.rotation.z)*0.05;
-  }
-  animateMarkers();
-  renderer.render(scene,camera);
 }
-animate();
+requestAnimationFrame(animate);
 
-// Resize
-window.addEventListener('resize',()=>{
-  camera.aspect=window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth,window.innerHeight);
+// ── PANEL CUENTO ──────────────────────────────────────────────────────────────
+function openPanel(i){
+  const d=DATA[i];
+  document.getElementById('p-flag').textContent=d.flag;
+  document.getElementById('p-name').textContent=d.name;
+  document.getElementById('p-sub').textContent=d.sub;
+  document.getElementById('p-text').innerHTML=d.text.replace(/\n\n/g,'<br><br>');
+  document.getElementById('overlay').classList.add('open');
+  autoRotate=false;
+}
+function closePanel(){
+  document.getElementById('overlay').classList.remove('open');
+  setTimeout(()=>{autoRotate=true;},600);
+}
+document.getElementById('overlay').addEventListener('click',function(e){
+  if(e.target===this) closePanel();
 });
+
+// Init
+resizeGlobe();
+window.addEventListener('resize',resizeGlobe);
 </script>
 </body>
 </html>
